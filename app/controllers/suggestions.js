@@ -9,6 +9,7 @@ exports.getSuggestions = (req, res) => {
     console.log('Starting Job')
     const job = schedule.scheduleJob(`*/${process.env.SCHEDULE_TIME} * * * * *`, async () => {
 
+
         if (req.app.get('songRequests').length) {
             // Serving songRequests
             const pendingRequests = req.app.get('songRequests')
@@ -31,6 +32,7 @@ exports.getSuggestions = (req, res) => {
 
         } else {
             // Sending featured playlists data
+
             const featuredPlaylists = await spotifyCalls.fetchFeaturedPlaylist();
             const playlistName = featuredPlaylists.body.playlists.items[0].name
             const playlistImage = featuredPlaylists.body.playlists.items[0].images[0].url
@@ -50,15 +52,17 @@ exports.getSuggestions = (req, res) => {
             count += 1
             console.log(`Playlist ${count} Name: `, songsData.playlistName)
 
-            if (req.app.get('terminateScheduling')) {
-                console.log('Terminating Job')
-                job.cancel()
-            }
+        }
+
+        // Checking terminate condition
+        if (req.app.get('terminateScheduling')) {
+            console.log('Terminating Job')
+            job.cancel()
         }
     })
 
     res.status(200).send({
-        msgos: 'hey hj'
+        msg: `Next request will be served in ${process.env.SCHEDULE_TIME} seconds    `
     })
 
 }
@@ -88,10 +92,10 @@ exports.terminateJob = (req, res) => {
     if (!req.app.get('terminateScheduling')) {
         req.app.set('terminateScheduling', true)
 
-        const pendingRequests = req.app.get('songRequests').length
+        req.app.set('songRequests', [])
 
         res.status(200).send({
-            msg: `Job will terminate after completing ${pendingRequests} requests`
+            msg: `Terminating Scheduler`
         })
     }
 }

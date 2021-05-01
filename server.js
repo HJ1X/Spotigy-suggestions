@@ -39,7 +39,10 @@ app.use('/', suggestionRouter)
 
 io.on('connection', socket => {
     console.log('Connection id: ', socket.id)
-    io.emit('message', 'sending message')
+    io.emit('connected', {
+        connectionId: socket.id,
+        msg: 'Connection esatblished'
+    })
 })
 
 
